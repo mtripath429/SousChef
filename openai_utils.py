@@ -44,8 +44,17 @@ def get_openai_client() -> OpenAI:
         raise RuntimeError(
             "Missing OPENAI_API_KEY. Set it in Streamlit secrets or environment."
         )
+    # Construct an explicit httpx client to avoid compatibility issues where
+    # the SDK may pass a `proxies` kwarg that isn't supported by the
+    # installed httpx version. Passing a pre-built client gives us control.
+    try:
+        import httpx
 
-    return OpenAI(api_key=api_key)
+        http_client = httpx.Client()
+    except Exception:
+        http_client = None
+
+    return OpenAI(api_key=api_key, http_client=http_client)
 
 
 def response_text(resp) -> str:
