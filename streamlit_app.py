@@ -338,13 +338,73 @@ def recipe_page():
                 except Exception:
                     st.write("Source:", src)
 
+            # Show metadata: servings, prep/cook time, tags
+            servings = r.get("servings")
+            prep = r.get("prep_time")
+            cook = r.get("cook_time")
+            tags = r.get("tags") or []
+            meta_parts = []
+            if servings:
+                meta_parts.append(f"Servings: {servings}")
+            if prep:
+                meta_parts.append(f"Prep: {prep}")
+            if cook:
+                meta_parts.append(f"Cook: {cook}")
+            if meta_parts:
+                st.write(" — ".join(meta_parts))
+            if tags:
+                st.write("Tags:", ", ".join(tags))
+
             with st.expander("View ingredient amounts"):
-                for ing in r.get("ingredients", []):
-                    st.write(f"- {ing['name']} — {ing['amount']} {ing['unit']}")
+                ings = r.get("ingredients", [])
+                if ings:
+                    # Show ingredients as a small table
+                    try:
+                        import pandas as _pd
+
+                        df = _pd.DataFrame(ings)
+                        st.table(df)
+                    except Exception:
+                        for ing in ings:
+                            st.write(f"- {ing.get('name')} — {ing.get('amount')} {ing.get('unit')}")
+                else:
+                    st.write("No ingredients available.")
             # Detailed step-by-step instructions (preferred over the short `steps`)
             with st.expander("Detailed recipe / Steps"):
                 detailed = r.get("detailed_steps") or r.get("steps") or "No detailed steps provided."
-                st.write(detailed)
+                # Render numbered steps as markdown to preserve formatting
+                try:
+                    st.markdown(detailed)
+                except Exception:
+                    st.write(detailed)
+            # Source link and metadata area
+            src = r.get("source") or r.get("url")
+            if src:
+                try:
+                    st.markdown(f"<a href=\"{src}\" target=\"_blank\">View source</a>", unsafe_allow_html=True)
+                except Exception:
+                    st.write("Source:", src)
+
+            # Show metadata: servings, prep/cook time, tags
+            servings = r.get("servings")
+            prep = r.get("prep_time")
+            cook = r.get("cook_time")
+            tags = r.get("tags") or []
+            meta_parts = []
+            if servings:
+                meta_parts.append(f"Servings: {servings}")
+            if prep:
+                meta_parts.append(f"Prep: {prep}")
+            if cook:
+                meta_parts.append(f"Cook: {cook}")
+            if meta_parts:
+                st.write(" — ".join(meta_parts))
+            if tags:
+                # Render tags as small badges using HTML
+                badges = " ".join([
+                    f'<span style="background:#eee;border-radius:6px;padding:3px 8px;margin-right:6px;display:inline-block">{t}</span>' for t in tags
+                ])
+                st.markdown(badges, unsafe_allow_html=True)
 
             st.write("---")
 

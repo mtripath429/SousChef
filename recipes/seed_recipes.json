@@ -3,23 +3,107 @@
     "id": 1,
     "title": "Spinach Chickpea Curry",
     "ingredients": [
-      { "name": "spinach",         "amount": 200, "unit": "g" },
-      { "name": "chickpeas",       "amount": 400, "unit": "g" },
-      { "name": "onion",           "amount": 1,   "unit": "item" },
-      { "name": "garlic",          "amount": 3,   "unit": "clove" },
-      { "name": "canned tomatoes", "amount": 400, "unit": "g" }
+      { "name": "spinach", "amount": 200, "unit": "g" },
+      { "name": "chickpeas", "amount": 400, "unit": "g" },
+      { "name": "onion", "amount": 1, "unit": "item" },
+      { "name": "garlic", "amount": 3, "unit": "clove" },
+      { "name": "canned tomatoes", "amount": 400, "unit": "g" },
+      { "name": "ground cumin", "amount": 1, "unit": "tsp" },
+      { "name": "ground coriander", "amount": 1, "unit": "tsp" },
+      { "name": "turmeric", "amount": 1, "unit": "tsp" },
+      { "name": "vegetable oil", "amount": 1, "unit": "tbsp" },
+      { "name": "salt", "amount": 1, "unit": "tsp" }
     ],
-    "steps": "Saute onion and garlic, add spices, add chickpeas and tomatoes, simmer, add spinach at the end."
+    "source": "https://www.budgetbytes.com/spinach-chickpea-curry/",
+    "servings": 4,
+    "prep_time": "10 mins",
+    "cook_time": "20 mins",
+    "tags": ["vegetarian", "vegan", "quick"],
+    "steps": "1) Drain and rinse the chickpeas. 2) Roughly chop the onion and mince the garlic. 3) Heat the oil in a large skillet over medium heat; add the onion and cook until soft (5–7 minutes). 4) Add garlic, cumin, coriander, and turmeric; cook until fragrant (30–60 seconds). 5) Add canned tomatoes and drained chickpeas, stir to combine, bring to a simmer and cook 8–10 minutes so flavors meld. 6) Add the spinach in batches, stirring until wilted. 7) Season with salt and adjust spices to taste. 8) Serve over rice or with flatbread.",
+    "detailed_steps": "Step 1: Prepare ingredients — drain and rinse one 400g can of chickpeas, roughly chop one onion, mince three cloves of garlic. Step 2: Toast spices — heat 1 tablespoon vegetable oil over medium heat; add 1 teaspoon ground cumin, 1 teaspoon ground coriander and 1 teaspoon turmeric and stir for 30–60 seconds until fragrant. Step 3: Saute aromatics — add the chopped onion and cook 5–7 minutes until translucent; add the minced garlic and cook 30 seconds. Step 4: Simmer base — add a 400g can of crushed tomatoes and the chickpeas; reduce heat and simmer 8–10 minutes to thicken. Step 5: Finish with greens — add 200g spinach in batches, stirring until wilted. Step 6: Season and serve — add 1 teaspoon salt (adjust to taste), a squeeze of lemon if desired; serve with rice or bread. Tips: If the sauce is too thick, add up to 1/4 cup water; top with yogurt for extra creaminess (omit for vegan)."
   },
+
   {
     "id": 2,
-    "title": "Tomato Pasta",
+    "title": "Simple Tomato Garlic Pasta",
     "ingredients": [
-      { "name": "pasta",           "amount": 100, "unit": "g" },
-      { "name": "canned tomatoes", "amount": 200, "unit": "g" },
-      { "name": "garlic",          "amount": 2,   "unit": "clove" },
-      { "name": "olive oil",       "amount": 1,   "unit": "tbsp" }
+      { "name": "pasta", "amount": 200, "unit": "g" },
+      { "name": "canned tomatoes", "amount": 400, "unit": "g" },
+      { "name": "garlic", "amount": 3, "unit": "clove" },
+      { "name": "olive oil", "amount": 2, "unit": "tbsp" },
+      { "name": "salt", "amount": 1, "unit": "tsp" },
+      { "name": "red pepper flakes", "amount": 0.25, "unit": "tsp" }
     ],
-    "steps": "Cook pasta, make tomato sauce, combine."
+    "source": "https://www.simplyrecipes.com/",
+    "servings": 2,
+    "prep_time": "5 mins",
+    "cook_time": "20 mins",
+    "tags": ["vegetarian", "quick"],
+    "steps": "1) Bring a large pot of salted water to a boil and cook pasta until al dente according to package directions; reserve 1 cup pasta water before draining. 2) Meanwhile, warm olive oil in a skillet over medium heat. 3) Add thinly sliced/minced garlic and red pepper flakes; cook gently (do not brown) for about 1 minute. 4) Pour in canned tomatoes, break them up with a spoon, and simmer 8–12 minutes to thicken slightly. 5) Add a few tablespoons of reserved pasta water to loosen the sauce, then toss in drained pasta and mix until coated. 6) Taste and season with salt and extra pepper flakes if desired. 7) Serve with grated cheese or fresh herbs if available.",
+    "detailed_steps": "Step 1: Cook pasta — bring a large pot of salted water to a boil and cook 200g pasta until al dente; reserve 1 cup of pasta water, then drain. Step 2: Build sauce — heat 2 tablespoons olive oil in a skillet over medium, add 3 cloves minced garlic and 1/4 teaspoon red pepper flakes, sauté gently about 1 minute. Step 3: Add tomatoes — pour in a 400g can of tomatoes, break up with a spoon, reduce to a simmer and cook 8–12 minutes until slightly thickened. Step 4: Finish pasta — add a few tablespoons of reserved pasta water to the sauce, toss in the drained pasta, and stir to combine. Step 5: Serve — taste for seasoning and add salt as needed; top with grated cheese or fresh herbs."
+  },
+
+  {
+    "id": 3,
+    "title": "One‑Pan Lemon Garlic Chicken and Vegetables",
+    "ingredients": [
+      { "name": "chicken thighs (bone-in or boneless)", "amount": 4, "unit": "item" },
+      { "name": "potatoes", "amount": 400, "unit": "g" },
+      { "name": "carrots", "amount": 200, "unit": "g" },
+      { "name": "olive oil", "amount": 2, "unit": "tbsp" },
+      { "name": "garlic", "amount": 4, "unit": "clove" },
+      { "name": "lemon", "amount": 1, "unit": "item" },
+      { "name": "rosemary (fresh or dried)", "amount": 1, "unit": "tsp" },
+      { "name": "salt", "amount": 1, "unit": "tsp" },
+      { "name": "black pepper", "amount": 0.5, "unit": "tsp" }
+    ],
+    "source": "https://www.allrecipes.com/",
+    "servings": 4,
+    "prep_time": "15 mins",
+    "cook_time": "35 mins",
+    "tags": ["one-pan", "family"],
+    "steps": "1) Preheat oven to 425°F (220°C). 2) Cut potatoes into even-size chunks and slice carrots. 3) In a large bowl, toss potatoes and carrots with half the olive oil, half the salt, and a pinch of pepper; spread on a sheet pan. 4) Pat chicken dry and rub with remaining oil, garlic (minced), rosemary, salt, and pepper. 5) Nest chicken among the vegetables on the sheet pan and roast for 25–35 minutes, until potatoes are tender and chicken reaches 165°F (74°C). 6) In the last 5 minutes, squeeze lemon over everything and roast to finish. 7) Let rest 5 minutes before serving. Tip: for crispier skin, broil 1–2 minutes at the end and watch closely.",
+    "detailed_steps": "Step 1: Preheat oven to 425°F (220°C). Step 2: Prep vegetables — wash and cut 400g potatoes into chunks and slice 200g carrots; toss with 1 tablespoon olive oil, 1/2 teaspoon salt, and pepper. Step 3: Season chicken — pat 4 chicken thighs dry and rub with remaining olive oil, minced garlic, 1 teaspoon rosemary, salt and pepper. Step 4: Arrange on sheet pan — spread vegetables on a rimmed sheet pan and nest the chicken pieces among them. Step 5: Roast — cook 25–35 minutes until vegetables are tender and chicken reaches 165°F. Step 6: Finish — in the final 5 minutes, squeeze juice of 1 lemon over the pan; optionally broil 1–2 minutes for crisp skin. Step 7: Rest and serve — let rest 5 minutes, then plate."
+  },
+
+  {
+    "id": 4,
+    "title": "Quinoa Salad with Roasted Vegetables",
+    "ingredients": [
+      { "name": "quinoa", "amount": 200, "unit": "g" },
+      { "name": "zucchini", "amount": 1, "unit": "item" },
+      { "name": "bell pepper", "amount": 1, "unit": "item" },
+      { "name": "red onion", "amount": 0.5, "unit": "item" },
+      { "name": "olive oil", "amount": 2, "unit": "tbsp" },
+      { "name": "lemon", "amount": 1, "unit": "item" },
+      { "name": "feta cheese", "amount": 50, "unit": "g" }
+    ],
+    "source": "https://cookieandkate.com/",
+    "servings": 4,
+    "prep_time": "10 mins",
+    "cook_time": "25 mins",
+    "tags": ["vegetarian", "salad", "make-ahead"],
+    "steps": "1) Preheat oven to 425°F (220°C). 2) Chop zucchini, bell pepper, and red onion into bite-sized pieces; toss with 1 tablespoon olive oil and a pinch of salt. 3) Roast vegetables on a sheet pan for 18–22 minutes until tender and slightly charred. 4) Meanwhile, rinse quinoa, then cook in 2 cups water (or broth) — bring to a boil, simmer, cover, and cook 12–15 minutes until water is absorbed; fluff with a fork. 5) Combine cooked quinoa and roasted vegetables in a bowl, crumble feta over top, squeeze lemon juice, drizzle remaining olive oil, and toss. 6) Adjust salt/pepper and serve warm or chilled.",
+    "detailed_steps": "Step 1: Preheat oven to 425°F (220°C). Step 2: Chop vegetables — cut 1 zucchini, 1 bell pepper, and 1/2 red onion into bite-sized pieces; toss with 1 tablespoon olive oil and a pinch of salt. Step 3: Roast — spread on a sheet pan and roast 18–22 minutes until edges are golden. Step 4: Cook quinoa — rinse 200g quinoa and cook in 2 cups water or broth for 12–15 minutes until absorbed; fluff and cool slightly. Step 5: Combine — mix quinoa and roasted vegetables, add crumbled 50g feta, squeeze lemon juice, drizzle remaining oil and toss. Step 6: Adjust seasoning and serve."
+  },
+
+  {
+    "id": 5,
+    "title": "Quick Fluffy Pancakes",
+    "ingredients": [
+      { "name": "all-purpose flour", "amount": 200, "unit": "g" },
+      { "name": "baking powder", "amount": 2, "unit": "tsp" },
+      { "name": "milk", "amount": 300, "unit": "ml" },
+      { "name": "egg", "amount": 1, "unit": "item" },
+      { "name": "butter (melted)", "amount": 2, "unit": "tbsp" },
+      { "name": "salt", "amount": 0.25, "unit": "tsp" }
+    ],
+    "source": "https://www.seriouseats.com/",
+    "servings": 3,
+    "prep_time": "5 mins",
+    "cook_time": "10 mins",
+    "tags": ["breakfast", "quick"],
+    "steps": "1) In a bowl, whisk together flour, baking powder, and salt. 2) In a separate bowl, whisk milk, egg, and melted butter. 3) Pour wet into dry ingredients and stir until just combined (a few lumps are ok). 4) Heat a nonstick skillet over medium and brush with a little butter or oil. 5) Pour 1/4 cup batter per pancake; cook until bubbles form on the surface and edges look set (2–3 minutes). 6) Flip and cook 1-2 minutes more until golden. 7) Keep warm in a low oven while finishing the batch. Serve with syrup, fruit, or yogurt.",
+    "detailed_steps": "Step 1: Mix dry ingredients — whisk 200g all-purpose flour with 2 teaspoons baking powder and 1/4 teaspoon salt in a bowl. Step 2: Mix wet ingredients — in another bowl whisk 300ml milk, 1 egg, and 2 tablespoons melted butter. Step 3: Combine — pour wet into dry and stir until just combined; do not overmix. Step 4: Cook pancakes — heat a nonstick skillet over medium, brush with butter, pour 1/4 cup batter for each pancake, cook 2–3 minutes until bubbles form, flip and cook 1–2 minutes. Step 5: Serve — keep pancakes warm in a low oven and serve with toppings of choice."
   }
 ]

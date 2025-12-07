@@ -44,6 +44,11 @@ def build_index():
                 "steps": r.get("steps"),
                 # Optional source URL or attribution; may be missing for bundled recipes
                 "source": r.get("source"),
+                "detailed_steps": r.get("detailed_steps"),
+                "servings": r.get("servings"),
+                "prep_time": r.get("prep_time"),
+                "cook_time": r.get("cook_time"),
+                "tags": r.get("tags"),
             }
         )
 
