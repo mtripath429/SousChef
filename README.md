@@ -40,16 +40,37 @@ pip install -r requirements.txt
 
 ## OpenAI credentials
 
-Set your API key via Streamlit secrets (preferred):
+Set your API key via Streamlit secrets (preferred). This repository includes
+an example file you can copy and edit without committing your real key:
 
-Create `.streamlit/secrets.toml` in the project root:
+```
+cp .streamlit/secrets.toml.example .streamlit/secrets.toml
+# then edit .streamlit/secrets.toml and replace the placeholder
+```
+
+Contents should look like:
 
 ```
 [general]
 OPENAI_API_KEY = "sk-..."
 ```
 
-Alternatively, set environment variable `OPENAI_API_KEY`.
+Alternatively, export the environment variable before running Streamlit:
+
+```
+export OPENAI_API_KEY="sk-..."
+streamlit run streamlit_app.py
+```
+
+For interactive shells, you can temporarily set the key for the session by
+sourcing the provided helper (do not run this script directly — `source` it):
+
+```
+source scripts/set_openai_key.sh sk-YOUR_KEY_HERE
+```
+
+Important: never commit `.streamlit/secrets.toml` with real keys. The
+project's `.gitignore` already excludes it.
 
 ## Running the app
 
