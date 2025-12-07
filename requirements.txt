@@ -1,5 +1,5 @@
 streamlit
 sqlalchemy
 openai
-python-dotenv
 chromadb
+python-dotenv

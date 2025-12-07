@@ -1,0 +1,25 @@
+[
+  {
+    "id": 1,
+    "title": "Spinach Chickpea Curry",
+    "ingredients": [
+      { "name": "spinach",         "amount": 200, "unit": "g" },
+      { "name": "chickpeas",       "amount": 400, "unit": "g" },
+      { "name": "onion",           "amount": 1,   "unit": "item" },
+      { "name": "garlic",          "amount": 3,   "unit": "clove" },
+      { "name": "canned tomatoes", "amount": 400, "unit": "g" }
+    ],
+    "steps": "Saute onion and garlic, add spices, add chickpeas and tomatoes, simmer, add spinach at the end."
+  },
+  {
+    "id": 2,
+    "title": "Tomato Pasta",
+    "ingredients": [
+      { "name": "pasta",           "amount": 100, "unit": "g" },
+      { "name": "canned tomatoes", "amount": 200, "unit": "g" },
+      { "name": "garlic",          "amount": 2,   "unit": "clove" },
+      { "name": "olive oil",       "amount": 1,   "unit": "tbsp" }
+    ],
+    "steps": "Cook pasta, make tomato sauce, combine."
+  }
+]
