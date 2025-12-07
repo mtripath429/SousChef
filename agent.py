@@ -25,13 +25,18 @@ def tool_query_local_recipes(ingredients):
     return query_recipes_by_ingredients(ingredients)
 
 
-def recommend_recipes_with_agent():
+def recommend_recipes_with_agent(extra_candidates=None):
     pantry = tool_get_pantry()
     if not pantry:
         return {"recipes": []}
 
     pantry_names = list({item["name"].lower() for item in pantry})
     candidate_recipes = tool_query_local_recipes(pantry_names)
+    # Merge in extra/web candidates if provided (they should be list of recipe dicts)
+    if extra_candidates:
+        # normalize incoming candidates to expected dict keys
+        for c in extra_candidates:
+            candidate_recipes.append(c)
 
     # Provide a strict JSON schema and a short example to encourage machine-parsable output.
     json_example = {
@@ -78,52 +83,107 @@ def recommend_recipes_with_agent():
     )
 
     client = get_openai_client()
-    # Support multiple SDK shapes: prefer `responses`, then `chat.completions`,
-    # then legacy `completions` as a last resort.
-    if hasattr(client, "responses"):
-        resp = client.responses.create(
-            model="gpt-4.1-mini",
-            input=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
-            ],
-            response_format={"type": "json_object"},
-        )
-        content = response_text(resp)
-    else:
+
+    def call_model(system_prompt: str, user_prompt: str):
+        """Call the available OpenAI client shape and return raw text content."""
+        if hasattr(client, "responses"):
+            resp = client.responses.create(
+                model="gpt-4.1-mini",
+                input=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                response_format={"type": "json_object"},
+            )
+            return response_text(resp)
+
         messages = [
-            {"role": "system", "content": system},
-            {"role": "user", "content": user},
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
         ]
         if hasattr(client, "chat") and hasattr(client.chat, "completions"):
-            # Use chat completions and ask for strict JSON
             resp = client.chat.completions.create(
                 model="gpt-4.1-mini",
                 messages=messages,
                 response_format={"type": "json_object"},
             )
-            content = response_text(resp)
-        else:
-            # Legacy completions fallback: include the JSON example in the prompt
-            prompt = system + "\n" + user + "\nReturn ONLY JSON matching the example."
-            resp = client.completions.create(model="gpt-3.5-turbo-instruct", prompt=prompt)
-            content = response_text(resp)
+            return response_text(resp)
 
-    # Try to parse the JSON robustly and validate expected keys
-    try:
-        data = json.loads(content)
-    except Exception:
-        # Try to extract the first JSON object/array substring
-        import re
+        # Legacy completions fallback
+        prompt = system_prompt + "\n" + user_prompt + "\nReturn ONLY JSON matching the example."
+        resp = client.completions.create(model="gpt-3.5-turbo-instruct", prompt=prompt)
+        return response_text(resp)
 
-        m = re.search(r"\{.*\}|\[.*\]", content, re.DOTALL)
-        if m:
-            try:
-                data = json.loads(m.group(0))
-            except Exception as e:
-                raise RuntimeError(f"Failed to parse agent JSON response: {e}\nRaw response:\n{content}")
-        else:
-            raise RuntimeError(f"Agent returned non-JSON response:\n{content}")
+
+    def validate_parsed(data_obj):
+        """Basic validation for the agent's parsed JSON structure.
+
+        Returns (valid: bool, reason: str).
+        """
+        if not isinstance(data_obj, dict):
+            return False, "top-level JSON is not an object"
+        if "recipes" not in data_obj or not isinstance(data_obj["recipes"], list):
+            return False, "missing 'recipes' list"
+        if len(data_obj["recipes"]) == 0:
+            return False, "'recipes' list is empty"
+        # Check each recipe for minimal required fields
+        for idx, r in enumerate(data_obj["recipes"]):
+            if not isinstance(r, dict):
+                return False, f"recipe at index {idx} is not an object"
+            if not r.get("title"):
+                return False, f"recipe at index {idx} missing 'title'"
+            if not isinstance(r.get("ingredients", []), list):
+                return False, f"recipe at index {idx} has non-list 'ingredients'"
+            # Ensure ingredients have at least 'name'
+            for ing in r.get("ingredients", []):
+                if not isinstance(ing, dict) or not ing.get("name"):
+                    return False, f"recipe at index {idx} has ingredient missing 'name'"
+        return True, "ok"
+
+
+    max_retries = 3
+    last_raw = None
+    for attempt in range(max_retries):
+        raw = call_model(system, user)
+        last_raw = raw
+        # Try to parse the JSON robustly
+        try:
+            parsed = json.loads(raw)
+        except Exception:
+            import re
+
+            m = re.search(r"\{.*\}|\[.*\]", raw, re.DOTALL)
+            if m:
+                try:
+                    parsed = json.loads(m.group(0))
+                except Exception:
+                    parsed = None
+            else:
+                parsed = None
+
+        valid, reason = (False, "no parse")
+        if parsed is not None:
+            valid, reason = validate_parsed(parsed)
+
+        if valid:
+            data = parsed
+            break
+
+        # If invalid and we have retries left, ask the model to regenerate
+        if attempt < max_retries - 1:
+            # Provide the model with the previous raw response and a brief reason
+            followup_user = (
+                user
+                + "\n\nThe previous response was invalid: "
+                + reason
+                + "\nHere is the raw response the assistant gave:\n" + raw
+                + "\nPlease respond again with ONLY JSON matching the example schema."
+            )
+            # next loop will call the model again with same system + followup_user
+            user = followup_user
+            continue
+        # Exhausted retries
+        raise RuntimeError(f"Agent failed to produce valid JSON after {max_retries} attempts. Last raw response:\n{last_raw}")
 
     # Basic validation: top-level 'recipes' list
     if not isinstance(data, dict) or "recipes" not in data or not isinstance(data["recipes"], list):

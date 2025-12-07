@@ -190,20 +190,19 @@ def inventory_page():
 
     st.subheader("Add Item")
 
-    with st.form("add_item_form"):
-        name = st.text_input("Item name")
-        category = st.selectbox("Category", ["pantry", "fridge", "freezer"])
-        quantity = st.number_input("Quantity", min_value=0.0, value=1.0)
-        unit = st.text_input("Unit (e.g., g, oz, cup, item)", value="item")
-        purchase_date = st.date_input("Purchase date", value=date.today())
-        use_ai = st.checkbox("Use AI to estimate best-buy date", value=True)
-        manual_best_by = None
-        if not use_ai:
-            st.markdown("**Manual best‑by** — since AI is disabled, you can optionally set a best‑by date")
-            manual_best_by = st.date_input("Manual best-by date", value=purchase_date)
-        submitted = st.form_submit_button("Add item")
+    # Use immediate controls (not a Streamlit form) so toggles are reactive instantly
+    name = st.text_input("Item name", key="add_name")
+    category = st.selectbox("Category", ["pantry", "fridge", "freezer"], key="add_category")
+    quantity = st.number_input("Quantity", min_value=0.0, value=1.0, key="add_quantity")
+    unit = st.text_input("Unit (e.g., g, oz, cup, item)", value="item", key="add_unit")
+    purchase_date = st.date_input("Purchase date", value=date.today(), key="add_purchase_date")
+    use_ai = st.checkbox("Use AI to estimate best-buy date", value=True, key="add_use_ai")
+    manual_best_by = None
+    if not use_ai:
+        st.markdown("**Manual best‑by** — since AI is disabled, you can optionally set a best‑by date")
+        manual_best_by = st.date_input("Manual best-by date", value=purchase_date, key="add_manual_best_by")
 
-    if submitted and name:
+    if st.button("Add item", key="add_item_button") and name:
         session = SessionLocal()
         item = Item(
             name=name,
@@ -238,6 +237,22 @@ def inventory_page():
         session.commit()
         session.close()
         st.success(f"Added {name}")
+        # Clear inputs for convenience
+        try:
+            st.session_state["add_name"] = ""
+            st.session_state["add_category"] = "pantry"
+            st.session_state["add_quantity"] = 1.0
+            st.session_state["add_unit"] = "item"
+            st.session_state["add_purchase_date"] = date.today()
+            st.session_state["add_use_ai"] = True
+            st.session_state["add_manual_best_by"] = st.session_state.get("add_purchase_date", date.today())
+        except Exception:
+            pass
+        # Refresh to show the new item in the list immediately
+        try:
+            st.experimental_rerun()
+        except Exception:
+            pass
 
     st.subheader("Current Inventory")
     session = SessionLocal()
@@ -246,6 +261,13 @@ def inventory_page():
 
     if items:
         st.markdown("#### Manage Inventory")
+        # Render header row
+        header_cols = st.columns([3, 2, 2, 2, 3, 2])
+        headers = ["Item", "Location", "Quantity", "Measurement", "Best By", "Actions"]
+        for c, h in zip(header_cols, headers):
+            c.markdown(f"**{h}**")
+
+        # Render rows
         for i in items:
             cols = st.columns([3, 2, 2, 2, 3, 2])
             with cols[0]:
@@ -253,33 +275,41 @@ def inventory_page():
             with cols[1]:
                 st.write(i.category)
             with cols[2]:
+                # Show only the numeric input control (no visible label), keep internal key
                 new_qty = st.number_input(
-                    f"Qty_{i.id}", min_value=0.0, value=float(i.quantity or 0.0), key=f"qty_{i.id}"
+                    "", min_value=0.0, value=float(i.quantity or 0.0), key=f"qty_{i.id}"
                 )
             with cols[3]:
                 st.write(i.unit or "")
             with cols[4]:
-                st.write(f"Best by: {i.best_buy_date or '-'}")
+                st.write(f"{i.best_buy_date or '-'}")
             with cols[5]:
-                col_a, col_b = st.columns(2)
-                with col_a:
-                    if st.button("Save", key=f"save_{i.id}"):
-                        s = SessionLocal()
-                        itm = s.get(Item, i.id)
-                        if itm:
-                            itm.quantity = float(new_qty)
-                            s.commit()
-                        s.close()
-                        st.success(f"Saved {i.name}")
-                with col_b:
-                    if st.button("Delete", key=f"del_{i.id}"):
-                        s = SessionLocal()
-                        itm = s.get(Item, i.id)
-                        if itm:
-                            s.delete(itm)
-                            s.commit()
-                        s.close()
-                        st.warning(f"Deleted {i.name}")
+                # Compact two small buttons in-line so they fit cleanly
+                btn_a, btn_b = st.columns([1, 1], gap="small")
+                if btn_a.button("Save", key=f"save_{i.id}"):
+                    s = SessionLocal()
+                    itm = s.get(Item, i.id)
+                    if itm:
+                        itm.quantity = float(new_qty)
+                        s.commit()
+                    s.close()
+                    st.success(f"Saved {i.name}")
+                    try:
+                        st.experimental_rerun()
+                    except Exception:
+                        pass
+                if btn_b.button("Delete", key=f"del_{i.id}"):
+                    s = SessionLocal()
+                    itm = s.get(Item, i.id)
+                    if itm:
+                        s.delete(itm)
+                        s.commit()
+                    s.close()
+                    st.warning(f"Deleted {i.name}")
+                    try:
+                        st.experimental_rerun()
+                    except Exception:
+                        pass
     else:
         st.info("No items yet. Add some above.")
 
@@ -289,22 +319,14 @@ def inventory_page():
 def recipe_page():
     st.header("Recipe Recommender")
 
-    # Debug / explicit RAG demo
-    with st.expander("Debug: RAG-only recipe search"):
-        ing_input = st.text_input("Enter ingredients (comma-separated)", "spinach, chickpeas")
-        if st.button("Search recipes (RAG only)"):
-            ingredients = [s.strip() for s in ing_input.split(",") if s.strip()]
-            try:
-                results = query_recipes_by_ingredients(ingredients)
-                for r in results:
-                    st.markdown(f"### {r['title']}")
-                    st.write("Ingredients:")
-                    for ing in r["ingredients"]:
-                        st.write(f"- {ing['name']} — {ing['amount']} {ing['unit']}")
-                    st.write(r["steps"])
-                    st.write("---")
-            except Exception as e:
-                st.error(f"RAG search failed: {e}")
+    # Mode selector: RAG (local) or Online (web search via Responses API)
+    mode = st.radio("Search mode", ["RAG (local)", "Online (web)"], index=0)
+
+    # Build pantry names for web search / RAG queries
+    session = SessionLocal()
+    pantry_items = session.query(Item).all()
+    session.close()
+    pantry_names = [ (p.name or "").strip().lower() for p in pantry_items if p.name ]
 
     st.subheader("SousChef agent recommendations")
 
@@ -314,7 +336,17 @@ def recipe_page():
     if st.button("Suggest recipes from my pantry"):
         with st.spinner("SousChef is thinking..."):
             try:
-                result = recommend_recipes_with_agent()
+                # If Online mode, fetch web candidates via the web_search tool
+                extra = None
+                if mode.startswith("Online"):
+                    try:
+                        from web_search import get_recipes_for_ingredients
+
+                        extra = get_recipes_for_ingredients(pantry_names, top_k=5)
+                    except Exception as e:
+                        st.warning(f"Online search failed: {e}")
+
+                result = recommend_recipes_with_agent(extra_candidates=extra)
                 recipes = result.get("recipes", [])
                 st.session_state["recommended_recipes"] = recipes
             except Exception as e:
@@ -354,6 +386,42 @@ def recipe_page():
                 st.write(" — ".join(meta_parts))
             if tags:
                 st.write("Tags:", ", ".join(tags))
+
+            # Add to cookbook button (save web-sourced recipes into local seed_recipes.json)
+            if st.button("Add to cookbook", key=f"add_{idx}"):
+                try:
+                    import json as _json
+                    from pathlib import Path as _Path
+                    import rag as _rag
+
+                    recipes_file = _Path("recipes/seed_recipes.json")
+                    data = _json.load(open(recipes_file))
+                    max_id = max((r.get("id") or 0) for r in data) if data else 0
+                    new_id = max_id + 1
+                    # Normalize fields for storage
+                    store = {
+                        "id": new_id,
+                        "title": r.get("title"),
+                        "ingredients": r.get("ingredients", []),
+                        "steps": r.get("steps") or r.get("detailed_steps") or "",
+                        "source": r.get("source") or r.get("url"),
+                        "detailed_steps": r.get("detailed_steps"),
+                        "servings": r.get("servings"),
+                        "prep_time": r.get("prep_time"),
+                        "cook_time": r.get("cook_time"),
+                        "tags": r.get("tags", []),
+                    }
+                    data.append(store)
+                    _json.dump(data, open(recipes_file, "w"), indent=2)
+                    # Rebuild the in-memory index
+                    try:
+                        _rag.build_index()
+                    except Exception:
+                        _rag._INDEX = None
+                        _rag.build_index()
+                    st.success(f"Added '{r.get('title')}' to cookbook")
+                except Exception as e:
+                    st.error(f"Failed to add to cookbook: {e}")
 
             with st.expander("View ingredient amounts"):
                 ings = r.get("ingredients", [])
