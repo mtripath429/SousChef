@@ -52,15 +52,35 @@ def recommend_recipes_with_agent():
     )
 
     client = get_openai_client()
-    resp = client.responses.create(
-        model="gpt-4.1-mini",
-        input=[
+    # Support multiple SDK shapes: prefer `responses`, then `chat.completions`,
+    # then legacy `completions` as a last resort.
+    if hasattr(client, "responses"):
+        resp = client.responses.create(
+            model="gpt-4.1-mini",
+            input=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+            response_format={"type": "json_object"},
+        )
+        content = response_text(resp)
+    else:
+        messages = [
             {"role": "system", "content": system},
             {"role": "user", "content": user},
-        ],
-        response_format={"type": "json_object"},
-    )
+        ]
+        if hasattr(client, "chat") and hasattr(client.chat, "completions"):
+            resp = client.chat.completions.create(
+                model="gpt-4.1-mini",
+                messages=messages,
+                response_format={"type": "json_object"},
+            )
+            content = response_text(resp)
+        else:
+            # Legacy completions fallback: send a JSON-only instruction in the prompt
+            prompt = system + "\n" + user + "\nReturn ONLY JSON with key 'recipes'."
+            resp = client.completions.create(model="gpt-3.5-turbo-instruct", prompt=prompt)
+            content = response_text(resp)
 
-    content = response_text(resp)
     data = json.loads(content)
     return data  # expected {"recipes": [...]} 
