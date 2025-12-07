@@ -197,6 +197,10 @@ def inventory_page():
         unit = st.text_input("Unit (e.g., g, oz, cup, item)", value="item")
         purchase_date = st.date_input("Purchase date", value=date.today())
         use_ai = st.checkbox("Use AI to estimate best-buy date", value=True)
+        manual_best_by = None
+        if not use_ai:
+            st.markdown("**Manual best‑by** — since AI is disabled, you can optionally set a best‑by date")
+            manual_best_by = st.date_input("Manual best-by date", value=purchase_date)
         submitted = st.form_submit_button("Add item")
 
     if submitted and name:
@@ -222,8 +226,13 @@ def inventory_page():
             except Exception as e:
                 st.error(f"AI estimation failed: {e}")
         else:
-            item.best_buy_date = None
-            item.best_buy_source = "user"
+            # If the user supplied a manual best-by date, use it; otherwise leave blank
+            if manual_best_by:
+                item.best_buy_date = manual_best_by
+                item.best_buy_source = "user"
+            else:
+                item.best_buy_date = None
+                item.best_buy_source = "user"
 
         session.add(item)
         session.commit()
@@ -321,10 +330,21 @@ def recipe_page():
             st.write("Uses:", ", ".join(r.get("used_items", [])))
             st.write("Missing:", ", ".join(r.get("missing_items", [])))
             st.write(r.get("explanation", ""))
+            # Show source link if available
+            src = r.get("source") or r.get("url")
+            if src:
+                try:
+                    st.markdown(f"**Source:** [{src}]({src})")
+                except Exception:
+                    st.write("Source:", src)
 
             with st.expander("View ingredient amounts"):
                 for ing in r.get("ingredients", []):
                     st.write(f"- {ing['name']} — {ing['amount']} {ing['unit']}")
+            # Detailed step-by-step instructions (preferred over the short `steps`)
+            with st.expander("Detailed recipe / Steps"):
+                detailed = r.get("detailed_steps") or r.get("steps") or "No detailed steps provided."
+                st.write(detailed)
 
             st.write("---")
 

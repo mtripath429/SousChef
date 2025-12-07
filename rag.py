@@ -41,7 +41,9 @@ def build_index():
                 "id": r["id"],
                 "title": r["title"],
                 "ingredients": r["ingredients"],
-                "steps": r["steps"],
+                "steps": r.get("steps"),
+                # Optional source URL or attribution; may be missing for bundled recipes
+                "source": r.get("source"),
             }
         )
 

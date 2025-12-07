@@ -40,8 +40,10 @@ def recommend_recipes_with_agent():
         "Pick 3–5 recipes that maximize usage of pantry items, prioritizing items that are expired or closest to their best_buy_date. "
         "Explain briefly why each recipe is chosen with respect to waste reduction. "
         "For each chosen recipe, infer which pantry items it uses and which extra ingredients are missing. "
+        "For each chosen recipe, include a 'source' field (URL or attribution) if known, otherwise set it to null. "
+        "Also provide a 'detailed_steps' field with step-by-step, user-friendly instructions (more detailed than the brief 'steps' field). "
         "In your output, for each recipe, you MUST copy the exact 'ingredients' list from the original candidate recipe without changing amounts or units. "
-        "Return ONLY JSON with key 'recipes', which is a list of objects with keys: title, used_items, missing_items, explanation, ingredients."
+        "Return ONLY JSON with key 'recipes', which is a list of objects with keys: title, used_items, missing_items, explanation, ingredients, source, detailed_steps."
     )
 
     user = json.dumps(
