@@ -1,3 +1,4 @@
+import sqlite_compat  # ensure modern sqlite before any other imports (SQLAlchemy may import sqlite3)
 import streamlit as st
 from datetime import date, timedelta
 from sqlalchemy import func
