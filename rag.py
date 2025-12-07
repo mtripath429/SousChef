@@ -1,14 +1,10 @@
 import json
 import os
-# Ensure modern sqlite3 before importing chromadb (important on Streamlit Cloud)
-import sqlite_compat  # noqa: F401  
 import numpy as np
-import chromadb
 from openai_utils import get_openai_client
 
 
-CHROMA_PATH = "chroma_db"
-COLLECTION_NAME = "recipes"
+_INDEX = None  # lazy in-memory index of recipe embeddings
 
 
 def load_seed_recipes():
@@ -26,77 +22,72 @@ def embed_texts(texts):
     return np.array(vectors).tolist()  # Chroma wants plain Python lists
 
 
-def get_chroma_collection():
-    client_chroma = chromadb.PersistentClient(path=CHROMA_PATH)
-    collection = client_chroma.get_or_create_collection(name=COLLECTION_NAME)
-    return collection
+def _normalize_ingredient_name(s: str) -> str:
+    return (s or "").strip().lower()
 
 
 def build_index():
-    collection = get_chroma_collection()
-    if collection.count() > 0:
-        return
-
+    global _INDEX
     recipes = load_seed_recipes()
+    # Create simple textual representation focused on ingredients and title
     docs = []
-    ids = []
-    metadatas = []
-
+    metas = []
     for r in recipes:
         ingredient_names = [ing["name"] for ing in r["ingredients"]]
-        doc = (
-            f"{r['title']}\n"
-            f"Ingredients: {', '.join(ingredient_names)}\n"
-            f"Steps: {r['steps']}"
-        )
+        doc = f"{r['title']} | ingredients: {', '.join(ingredient_names)}"
         docs.append(doc)
-        ids.append(str(r["id"]))
-        metadatas.append(
+        metas.append(
             {
                 "id": r["id"],
                 "title": r["title"],
-                # full structured ingredients with amount + unit
                 "ingredients": r["ingredients"],
                 "steps": r["steps"],
             }
         )
 
-    embeddings = embed_texts(docs)
+    vectors = np.array(embed_texts(docs))  # shape: (N, D)
+    # Normalize for cosine similarity (avoid div by zero)
+    norms = np.linalg.norm(vectors, axis=1, keepdims=True)
+    norms[norms == 0] = 1.0
+    vectors = vectors / norms
 
-    collection.add(
-        ids=ids,
-        documents=docs,
-        metadatas=metadatas,
-        embeddings=embeddings,
-    )
+    _INDEX = {
+        "vectors": vectors,  # numpy array
+        "metas": metas,
+    }
 
 
 def ensure_index():
-    collection = get_chroma_collection()
-    if collection.count() == 0:
+    global _INDEX
+    if _INDEX is None:
         build_index()
 
 
 def query_recipes_by_ingredients(ingredients, top_k=5):
     ensure_index()
-    collection = get_chroma_collection()
+    query_text = "ingredients: " + ", ".join(_normalize_ingredient_name(i) for i in ingredients)
+    q_vec = np.array(embed_texts([query_text])[0])
+    # cosine similarity with pre-normalized doc vectors
+    q_norm = np.linalg.norm(q_vec)
+    if q_norm == 0:
+        q_norm = 1.0
+    q_vec = q_vec / q_norm
 
-    query_text = "Recipes that use: " + ", ".join(ingredients)
-    query_embedding = embed_texts([query_text])[0]
+    mats = _INDEX["vectors"]  # (N, D)
+    sims = np.dot(mats, q_vec)  # (N,)
+    # Get top_k indices
+    top_idx = np.argsort(-sims)[:top_k]
 
-    results = collection.query(
-        query_embeddings=[query_embedding],
-        n_results=top_k,
-    )
-
-    recipes = []
-    for meta in results["metadatas"][0]:
-        recipes.append(
+    metas = _INDEX["metas"]
+    results = []
+    for idx in top_idx:
+        meta = metas[int(idx)]
+        results.append(
             {
                 "id": meta["id"],
                 "title": meta["title"],
-                "ingredients": meta["ingredients"],  # keep structured data
+                "ingredients": meta["ingredients"],
                 "steps": meta["steps"],
             }
         )
-    return recipes
+    return results

@@ -1,7 +1,6 @@
 streamlit
 SQLAlchemy>=2.0,<3.0
 openai==1.52.2
-chromadb
 numpy
 python-dotenv
 pysqlite3-binary

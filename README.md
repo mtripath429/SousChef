@@ -15,7 +15,7 @@ An AI-powered meal planning app that:
 - Edit quantities in-place; delete items
 
 2) Recipe Recommender
-- Retrieves candidate recipes via a local RAG index (ChromaDB with OpenAI embeddings)
+- Retrieves candidate recipes via a lightweight in‑memory embeddings index (OpenAI embeddings + NumPy cosine similarity)
 - Uses an agent to pick recipes that maximize pantry usage, prioritizing items nearing best‑by
 - “Cook this” button applies a recipe to your pantry (decrements quantities)
 
@@ -57,7 +57,7 @@ Alternatively, set environment variable `OPENAI_API_KEY`.
 streamlit run streamlit_app.py
 ```
 
-On first recipe search, a Chroma index will be built under `chroma_db/` (ensure the process has write permissions).
+On first recipe search, an in‑memory index of the bundled seed recipes is built using OpenAI embeddings. No external database is required.
 
 ## Models used
 
@@ -87,10 +87,5 @@ Unit conversions are intentionally simple and may not cover all cases. Extend `_
 - OPENAI_API_KEY errors
   - Ensure `.streamlit/secrets.toml` contains `OPENAI_API_KEY` or export it in your shell before running the app.
 
-- ChromaDB permissions
-  - The app writes a local index to `chroma_db/`. Make sure the process has write permissions to the working directory.
-
-- ChromaDB sqlite3 version error (requires sqlite >= 3.35)
-  - Symptom: RuntimeError complaining that your system SQLite is too old.
-  - Fix: The project includes a shim that aliases `pysqlite3-binary` as `sqlite3` before importing Chroma. Ensure a fresh rebuild so `pysqlite3-binary` installs, and that `rag.py` imports `sqlite_compat` before `chromadb` (already set in this repo).
-  - On Streamlit Cloud: push these changes and click Reboot (full rebuild) from the app’s Manage page. If issues persist, Clear cache then Reboot.
+- RAG retrieval issues
+  - The app now uses an in‑memory embeddings index and no longer depends on ChromaDB or SQLite. If searches return nothing, ensure your OpenAI API key is set and reachable (see above). A first search will perform several embedding calls.
