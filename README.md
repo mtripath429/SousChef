@@ -74,3 +74,18 @@ Basic conversions supported:
 - Count: `item` (aliases: `items`, `pcs`, `piece`, `pieces`)
 
 Unit conversions are intentionally simple and may not cover all cases. Extend `_normalize_unit` and `_convert_amount` in `streamlit_app.py` as needed.
+
+## Troubleshooting
+
+- ModuleNotFoundError: No module named `sqlalchemy`
+  - Make sure dependencies are installed in the active environment:
+    - `pip install -r requirements.txt`
+    - Verify with `python -c "import sqlalchemy, pkgutil; print(sqlalchemy.__version__)"`
+  - Ensure you’re using the same interpreter where you installed packages (activate your virtualenv/conda env).
+  - On Streamlit Cloud/Codespaces, trigger a rebuild/restart so requirements are applied.
+
+- OPENAI_API_KEY errors
+  - Ensure `.streamlit/secrets.toml` contains `OPENAI_API_KEY` or export it in your shell before running the app.
+
+- ChromaDB permissions
+  - The app writes a local index to `chroma_db/`. Make sure the process has write permissions to the working directory.
