@@ -89,3 +89,8 @@ Unit conversions are intentionally simple and may not cover all cases. Extend `_
 
 - ChromaDB permissions
   - The app writes a local index to `chroma_db/`. Make sure the process has write permissions to the working directory.
+
+- ChromaDB sqlite3 version error (requires sqlite >= 3.35)
+  - Symptom: RuntimeError complaining that your system SQLite is too old.
+  - Fix: The project includes a shim that aliases `pysqlite3-binary` as `sqlite3` before importing Chroma. Ensure a fresh rebuild so `pysqlite3-binary` installs, and that `rag.py` imports `sqlite_compat` before `chromadb` (already set in this repo).
+  - On Streamlit Cloud: push these changes and click Reboot (full rebuild) from the app’s Manage page. If issues persist, Clear cache then Reboot.

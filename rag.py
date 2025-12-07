@@ -1,5 +1,7 @@
 import json
 import os
+# Ensure modern sqlite3 before importing chromadb (important on Streamlit Cloud)
+import sqlite_compat  # noqa: F401  
 import numpy as np
 import chromadb
 from openai_utils import get_openai_client
