@@ -1,5 +1,6 @@
 streamlit
 sqlalchemy
-openai
+openai==1.52.2
 chromadb
+numpy
 python-dotenv

@@ -1,11 +1,9 @@
 import json
 import os
 import numpy as np
-import streamlit as st
-from openai import OpenAI
 import chromadb
+from openai_utils import get_openai_client
 
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 CHROMA_PATH = "chroma_db"
 COLLECTION_NAME = "recipes"
@@ -17,6 +15,7 @@ def load_seed_recipes():
 
 
 def embed_texts(texts):
+    client = get_openai_client()
     resp = client.embeddings.create(
         model="text-embedding-3-small",
         input=texts,

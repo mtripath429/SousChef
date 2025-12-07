@@ -1,11 +1,8 @@
 import json
-import streamlit as st
-from openai import OpenAI
+from openai_utils import get_openai_client, response_text
 
 from db import SessionLocal, Item
 from rag import query_recipes_by_ingredients
-
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 
 def tool_get_pantry():
@@ -38,16 +35,13 @@ def recommend_recipes_with_agent():
 
     system = (
         "You are a meal planning assistant called SousChef. "
-        "You receive the user's pantry items and a list of candidate recipes. "
-        "Each candidate recipe has a structured 'ingredients' field: a list of objects "
-        "with 'name', 'amount', and 'unit'. "
-        "Your job is to pick 3–5 recipes that maximize usage of pantry items, "
-        "especially items that might expire soon. "
+        "You receive the user's pantry items (with optional best_buy_date) and a list of candidate recipes. "
+        "Each candidate recipe has a structured 'ingredients' field: a list of objects with 'name', 'amount', and 'unit'. "
+        "Pick 3–5 recipes that maximize usage of pantry items, prioritizing items that are expired or closest to their best_buy_date. "
+        "Explain briefly why each recipe is chosen with respect to waste reduction. "
         "For each chosen recipe, infer which pantry items it uses and which extra ingredients are missing. "
-        "In your output, for each recipe, you MUST copy the exact 'ingredients' list from the original "
-        "candidate recipe without changing amounts or units. "
-        "Return ONLY JSON with key 'recipes', which is a list of objects "
-        "with keys: title, used_items, missing_items, explanation, ingredients."
+        "In your output, for each recipe, you MUST copy the exact 'ingredients' list from the original candidate recipe without changing amounts or units. "
+        "Return ONLY JSON with key 'recipes', which is a list of objects with keys: title, used_items, missing_items, explanation, ingredients."
     )
 
     user = json.dumps(
@@ -57,6 +51,7 @@ def recommend_recipes_with_agent():
         }
     )
 
+    client = get_openai_client()
     resp = client.responses.create(
         model="gpt-4.1-mini",
         input=[
@@ -66,6 +61,6 @@ def recommend_recipes_with_agent():
         response_format={"type": "json_object"},
     )
 
-    content = resp.output[0].content[0].text
+    content = response_text(resp)
     data = json.loads(content)
-    return data  # expected {"recipes": [...]}
+    return data  # expected {"recipes": [...]} 

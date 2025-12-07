@@ -1,10 +1,6 @@
 from datetime import date
 import json
-import streamlit as st
-from openai import OpenAI
-
-# OpenAI client using Streamlit secrets
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+from openai_utils import get_openai_client, response_text
 
 
 def estimate_best_buy(item_name: str, category: str, purchase_date: date) -> dict:
@@ -25,6 +21,7 @@ def estimate_best_buy(item_name: str, category: str, purchase_date: date) -> dic
         f"Purchase date: {purchase_date.isoformat()}\n"
     )
 
+    client = get_openai_client()
     resp = client.responses.create(
         model="gpt-4.1-mini",
         input=[
@@ -34,6 +31,6 @@ def estimate_best_buy(item_name: str, category: str, purchase_date: date) -> dic
         response_format={"type": "json_object"},
     )
 
-    content = resp.output[0].content[0].text
+    content = response_text(resp)
     data = json.loads(content)
     return data
