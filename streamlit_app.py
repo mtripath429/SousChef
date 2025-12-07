@@ -41,12 +41,27 @@ def _normalize_unit(u: str) -> str:
         "kg": "kg",
         "kilogram": "kg",
         "kilograms": "kg",
+        "oz": "oz",
+        "ounce": "oz",
+        "ounces": "oz",
+        "lb": "lb",
+        "lbs": "lb",
+        "pound": "lb",
+        "pounds": "lb",
         "ml": "ml",
         "milliliter": "ml",
         "milliliters": "ml",
         "l": "l",
         "liter": "l",
         "liters": "l",
+        "tsp": "tsp",
+        "teaspoon": "tsp",
+        "teaspoons": "tsp",
+        "tbsp": "tbsp",
+        "tablespoon": "tbsp",
+        "tablespoons": "tbsp",
+        "cup": "cup",
+        "cups": "cup",
         "item": "item",
         "items": "item",
         "pcs": "item",
@@ -61,16 +76,54 @@ def _convert_amount(amount: float, from_unit: str, to_unit: str):
     to_u = _normalize_unit(to_unit)
     if from_u == to_u:
         return amount, True
-    # mass
+    # mass (g, kg, oz, lb)
     if from_u == "kg" and to_u == "g":
         return amount * 1000.0, True
     if from_u == "g" and to_u == "kg":
         return amount / 1000.0, True
+    if from_u == "oz" and to_u == "g":
+        return amount * 28.3495, True
+    if from_u == "g" and to_u == "oz":
+        return amount / 28.3495, True
+    if from_u == "lb" and to_u == "kg":
+        return amount * 0.453592, True
+    if from_u == "kg" and to_u == "lb":
+        return amount / 0.453592, True
+    if from_u == "lb" and to_u == "g":
+        return amount * 453.592, True
+    if from_u == "g" and to_u == "lb":
+        return amount / 453.592, True
     # volume
     if from_u == "l" and to_u == "ml":
         return amount * 1000.0, True
     if from_u == "ml" and to_u == "l":
         return amount / 1000.0, True
+    # US kitchen measures approximations via mL
+    if from_u == "tsp" and to_u == "ml":
+        return amount * 4.92892, True
+    if from_u == "ml" and to_u == "tsp":
+        return amount / 4.92892, True
+    if from_u == "tbsp" and to_u == "ml":
+        return amount * 14.7868, True
+    if from_u == "ml" and to_u == "tbsp":
+        return amount / 14.7868, True
+    if from_u == "cup" and to_u == "ml":
+        return amount * 240.0, True
+    if from_u == "ml" and to_u == "cup":
+        return amount / 240.0, True
+    # Cross conversions among tsp/tbsp/cup using ml as intermediary
+    if from_u == "tsp" and to_u == "tbsp":
+        return (amount * 4.92892) / 14.7868, True
+    if from_u == "tbsp" and to_u == "tsp":
+        return (amount * 14.7868) / 4.92892, True
+    if from_u == "tsp" and to_u == "cup":
+        return (amount * 4.92892) / 240.0, True
+    if from_u == "cup" and to_u == "tsp":
+        return (amount * 240.0) / 4.92892, True
+    if from_u == "tbsp" and to_u == "cup":
+        return (amount * 14.7868) / 240.0, True
+    if from_u == "cup" and to_u == "tbsp":
+        return (amount * 240.0) / 14.7868, True
     # items
     if from_u == "item" and to_u == "item":
         return amount, True
@@ -202,7 +255,7 @@ def inventory_page():
                 with col_a:
                     if st.button("Save", key=f"save_{i.id}"):
                         s = SessionLocal()
-                        itm = s.query(Item).get(i.id)
+                        itm = s.get(Item, i.id)
                         if itm:
                             itm.quantity = float(new_qty)
                             s.commit()
@@ -211,7 +264,7 @@ def inventory_page():
                 with col_b:
                     if st.button("Delete", key=f"del_{i.id}"):
                         s = SessionLocal()
-                        itm = s.query(Item).get(i.id)
+                        itm = s.get(Item, i.id)
                         if itm:
                             s.delete(itm)
                             s.commit()
@@ -231,14 +284,17 @@ def recipe_page():
         ing_input = st.text_input("Enter ingredients (comma-separated)", "spinach, chickpeas")
         if st.button("Search recipes (RAG only)"):
             ingredients = [s.strip() for s in ing_input.split(",") if s.strip()]
-            results = query_recipes_by_ingredients(ingredients)
-            for r in results:
-                st.markdown(f"### {r['title']}")
-                st.write("Ingredients:")
-                for ing in r["ingredients"]:
-                    st.write(f"- {ing['name']} — {ing['amount']} {ing['unit']}")
-                st.write(r["steps"])
-                st.write("---")
+            try:
+                results = query_recipes_by_ingredients(ingredients)
+                for r in results:
+                    st.markdown(f"### {r['title']}")
+                    st.write("Ingredients:")
+                    for ing in r["ingredients"]:
+                        st.write(f"- {ing['name']} — {ing['amount']} {ing['unit']}")
+                    st.write(r["steps"])
+                    st.write("---")
+            except Exception as e:
+                st.error(f"RAG search failed: {e}")
 
     st.subheader("SousChef agent recommendations")
 
