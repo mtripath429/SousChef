@@ -22,15 +22,38 @@ def estimate_best_buy(item_name: str, category: str, purchase_date: date) -> dic
     )
 
     client = get_openai_client()
-    resp = client.responses.create(
-        model="gpt-4.1-mini",
-        input=[
+    # Newer SDKs expose `client.responses.create`. Older/newer variants
+    # may expose `client.chat.completions.create` instead. Support both.
+    if hasattr(client, "responses"):
+        resp = client.responses.create(
+            model="gpt-4.1-mini",
+            input=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+            response_format={"type": "json_object"},
+        )
+        content = response_text(resp)
+    else:
+        # Fallback to chat completions API available on some SDK versions
+        # Build messages list similar to Responses input
+        messages = [
             {"role": "system", "content": system},
             {"role": "user", "content": user},
-        ],
-        response_format={"type": "json_object"},
-    )
-
-    content = response_text(resp)
+        ]
+        # Use chat.completions.create if available
+        if hasattr(client, "chat") and hasattr(client.chat, "completions"):
+            resp = client.chat.completions.create(
+                model="gpt-4.1-mini",
+                messages=messages,
+                response_format={"type": "json_object"},
+            )
+            content = response_text(resp)
+        else:
+            # As a last resort, try the legacy completions API with a JSON-only
+            # instruction in the prompt.
+            prompt = system + "\n" + user + "\nRespond ONLY in JSON with keys best_buy_date and reason."
+            resp = client.completions.create(model="gpt-3.5-turbo-instruct", prompt=prompt)
+            content = response_text(resp)
     data = json.loads(content)
     return data
